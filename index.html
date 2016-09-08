@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>pcf-splunk-input by poprygun</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>pcf-splunk-input</h1>
+        <p>Configure Cloud Foundry Logregator input for Splunk</p>
+
+        <p class="view"><a href="https://github.com/poprygun/splunk-pcf-configuration">View the Project on GitHub <small>poprygun/splunk-pcf-configuration</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/poprygun/splunk-pcf-configuration/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/poprygun/splunk-pcf-configuration/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/poprygun/splunk-pcf-configuration">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h3>
+<a id="logging-with-pcf-and-splunk" class="anchor" href="#logging-with-pcf-and-splunk" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Logging with PCF and Splunk.</h3>
+
+<p>Detailed instructions based on <a href="https://docs.cloudfoundry.org/devguide/services/integrate-splunk.html">Cloud Foundry documentation</a>.</p>
+
+<h4>
+<a id="download-and-build-docker-image-of-splunk" class="anchor" href="#download-and-build-docker-image-of-splunk" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Download and build <a href="https://github.com/outcoldman/docker-splunk">docker image of Splunk</a>.</h4>
+
+<div class="highlight highlight-source-shell"><pre>git clone https://github.com/outcoldman/docker-splunk.git
+<span class="pl-c1">cd</span> docker-splunk/splunk
+docker build --tag=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-smi">$USER</span>/splunk<span class="pl-pds">"</span></span> <span class="pl-c1">.</span></pre></div>
+
+<h4>
+<a id="start-specifying-web-ui-and-communication-ports" class="anchor" href="#start-specifying-web-ui-and-communication-ports" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Start specifying web ui, and communication ports.</h4>
+
+<div class="highlight highlight-source-shell"><pre>docker run --hostname splunk -p 8000:8000 -p 9997:9997 -d --env SPLUNK_START_ARGS=<span class="pl-s"><span class="pl-pds">"</span>--accept-license --answer-yes --no-prompt<span class="pl-pds">"</span></span> ashumilov/splunk:6.4.3
+
+docker <span class="pl-c1">exec</span> ec1dd23d6c26 entrypoint.sh splunk <span class="pl-c1">enable</span> listen 9997 -auth admin:<span class="pl-c1">pwd</span></pre></div>
+
+<h4>
+<a id="download-rfc5424-syslog-technology-add-on" class="anchor" href="#download-rfc5424-syslog-technology-add-on" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Download <a href="https://splunkbase.splunk.com/app/978/">RFC5424 Syslog Technology Add-On</a>.</h4>
+
+<p>Install, following instructions <a href="http://docs.splunk.com/Documentation/AddOns/released/Overview/Singleserverinstall">here</a>.</p>
+
+<h4>
+<a id="setup-a-new-tcp-local-input" class="anchor" href="#setup-a-new-tcp-local-input" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setup a new TCP Local Input.</h4>
+
+<p>Specify a port for the input - 9997 for example.
+Specify a Source Type as rfc5424_syslog from the dropdown.</p>
+
+<h4>
+<a id="create-and-bind-a-syslog-user-provided-service" class="anchor" href="#create-and-bind-a-syslog-user-provided-service" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create and bind a syslog User Provided Service.</h4>
+
+<div class="highlight highlight-source-shell"><pre>cf create-user-provided-service splunk-logger -l syslog://192.168.99.100:9997
+cf bind-service cd-demo-music splunk-logger
+cf restage cd-demo-music</pre></div>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/poprygun">poprygun</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
